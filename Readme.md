@@ -75,6 +75,12 @@ This will start the following services:
 - ClickHouse (ports 9000, 8123)
 - PeerDB UI (port 3000)
 
+### Stop the stack
+
+```bash
+docker compose down --volumes --remove-orphans
+```
+
 ### Access the services
 
 - PeerDB UI: http://localhost:3000
@@ -230,11 +236,6 @@ Note that loading the sample data into PostgreSQL on the first run can take seve
 
 This will start the sample application at http://localhost:3001
 
-### Stop the application
-
-```bash
-docker compose down --volumes --remove-orphans
-```
 
 ### Set Up Data Replication
 
