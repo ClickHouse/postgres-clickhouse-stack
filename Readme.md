@@ -50,16 +50,7 @@ From the application’s point of view, PostgreSQL remains the primary interface
 
 ## Architecture
 
-```
-┌─────────────┐         CDC          ┌─────────────┐
-│ PostgreSQL  │ ──────────────────▶  │ ClickHouse  │
-│   (OLTP)    │       PeerDB         │   (OLAP)    │
-└─────────────┘                      └─────────────┘
-      │                                      ▲
-      │                                      │
-      └──────── pg_clickhouse ───────────────┘
-           (Query Offloading)
-```
+![Architecture](./images/architecture-main.png)
 
 - **PostgreSQL**: Source of truth for transactional data
 - **PeerDB**: CDC pipeline for real-time replication
@@ -201,6 +192,18 @@ const pool = new Pool({
     : undefined,
 });
 ```
+
+At a high level, the resulting architecture looks like this:
+
+![Architecture](./images/integration-architecture-1.png)
+
+### Connect directly to ClickHouse
+
+If you want the application to talk to ClickHouse directly, you can use any of the available ClickHouse client libraries. Changes on the application side should still be fairly simple as ClickHouse supports SQL queries that are compatible with PostgreSQL.
+
+With this approach, the architecture looks like this:
+
+![Architecture](./images/integration-architecture-2.png)
 
 ## Sample application 
 
