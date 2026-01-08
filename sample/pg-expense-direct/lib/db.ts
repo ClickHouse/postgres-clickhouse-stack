@@ -1,5 +1,4 @@
 import { Pool } from 'pg';
-console.log(process.env.DB_SCHEMA);
 const pool = new Pool({
   user: process.env.DB_USER || 'admin',
   host: process.env.DB_HOST || 'localhost',

@@ -50,6 +50,24 @@ The result is a simple architecture that scales analytics without disrupting the
 
 From the application’s point of view, PostgreSQL remains the primary interface.
 
+## Architecture
+
+```
+┌─────────────┐         CDC          ┌─────────────┐
+│ PostgreSQL  │ ──────────────────▶  │ ClickHouse  │
+│   (OLTP)    │       PeerDB         │   (OLAP)    │
+└─────────────┘                      └─────────────┘
+      │                                      ▲
+      │                                      │
+      └──────── pg_clickhouse ───────────────┘
+           (Query Offloading)
+```
+
+- **PostgreSQL**: Source of truth for transactional data
+- **PeerDB**: CDC pipeline for real-time replication
+- **ClickHouse**: Analytical store for fast aggregations
+- **pg_clickhouse**: Transparent query offloading from PostgreSQL to ClickHouse
+
 ## Getting started
 
 ### Prerequisites
@@ -74,6 +92,117 @@ This will start the following services:
 - ClickHouse UI: http://localhost:8123/play
 - ClickHouse Client: `clickhouse client --host 127.0.0.1 --port 9000`
 - PostgreSQL: `psql -h localhost -p 5432 -U admin -d postgres` (password: `password`)
+
+## How to use the stack
+
+Using the stack with your own application is very simple.
+
+Assuming PostgreSQL is the primary database of your application, start by connecting it to the PostgreSQL instance running in the container.
+
+Next, identify the tables most commonly used for analytical queries and replicate them to ClickHouse using PeerDB. Finally, configure the ClickHouse foreign data wrapper with pg_clickhouse to offload analytical queries from PostgreSQL to ClickHouse.
+
+### Connect to PostgreSQL 
+
+The first step is to connect to the PostgreSQL instance running in the container. 
+
+Configure your application to connect to the PostgreSQL instance using this configuration: 
+- Host: localhost
+- Port: 5432
+- Username: admin
+- Password: password
+- Database: postgres
+
+### Create the ClickHouse database
+
+The next step is to create the ClickHouse database where the replicated tables will be stored. 
+
+```bash
+clickhouse client --host 127.0.0.1 --port 9000 --query "CREATE DATABASE IF NOT EXISTS mydb"
+```
+
+### Replicate data from PostgreSQL to ClickHouse
+
+[PeerDB documentation](https://docs.peerdb.io/mirror/cdc-pg-clickhouse) provides a detailed guide on how to configure peers to replicate data from PostgreSQL to ClickHouse.
+
+First start by creating two peers, one for PostgreSQL and one for ClickHouse. 
+
+This can be done using the PeerDB UI or the PeerDB API. 
+
+#### PostgreSQL Peer
+
+To configure the PostgreSQL peer, use the following information:
+
+- Name: `postgres`
+- Host: `host.docker.internal`
+- Port: `5432`
+- User: `admin`
+- Password: `password`
+- Database: `postgres`
+
+![PostgreSQL Peer](./images/peerdb-postgresql-peer.png)
+
+#### ClickHouse Peer
+
+To configure the ClickHouse peer, use the following information:
+
+- Name: `clickhouse`
+- Host: `host.docker.internal`
+- Port: `9000`
+- User: `default`
+- Password: `password`
+- Database: `mydb`
+
+![ClickHouse Peer](./images/peerdb-clickhouse-peer.png)
+
+#### Configure Mirror replication
+
+Once the peers are created, you can configure the mirror replication. You have the choice between different replication strategies. When replicating from PostgreSQL to ClickHouse, we recommend using the `CDC` replication strategy.
+
+You will need the following informations to configure the mirror replication:
+
+- Name: 'clickhouse_replication'
+- Source Peer: `postgres`
+- Target Peer: `clickhouse`
+- Replication Strategy: `CDC`
+
+Then select the tables you want to replicate from PostgreSQL to ClickHouse. Check the target table name in ClickHouse, it's best if it matches the source table name so we can leverage the schema import feature of pg_clickhouse.
+
+![Mirror Replication](./images/peerdb-mirror-replication.png)
+
+### Configure ClickHouse Foreign Data Wrapper
+
+[pg_clickhouse documentation](https://github.com/ClickHouse/pg_clickhouse/blob/main/doc/tutorial.md) provides a detailed guide on how to configure the ClickHouse foreign data wrapper with pg_clickhouse to offload analytical queries from PostgreSQL to ClickHouse.
+
+Below is an example of how you would configure pg_clickhouse in PostgreSQL to offload analytical queries to ClickHouse for the database `mydb`.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_clickhouse;
+CREATE SERVER clickhouse_svr FOREIGN DATA WRAPPER clickhouse_fdw OPTIONS(dbname 'mydb', host 'host.docker.internal');
+CREATE USER MAPPING FOR CURRENT_USER SERVER clickhouse_svr OPTIONS (user 'default', password '');
+CREATE SCHEMA IF NOT EXISTS mydb_ch;
+IMPORT FOREIGN SCHEMA mydb FROM SERVER clickhouse_svr INTO mydb_ch;
+```
+
+### Configure application to use ClickHouse for analytical queries
+
+Once data is replicated from PostgreSQL to ClickHouse, the application can be configured to route analytical queries to ClickHouse. This is done by querying a dedicated PostgreSQL schema backed by pg_clickhouse.
+
+The PostgreSQL client can be configured to use this schema by setting the search_path option in the connection string. In this project, the DB_SCHEMA environment variable is used to control this behavior. 
+
+In this example, DB_SCHEMA is set to `mydb_ch`.
+
+```typescript
+const pool = new Pool({
+  user: process.env.DB_USER || 'admin',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'postgres',
+  password: process.env.DB_PASSWORD || 'password',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  options: process.env.DB_SCHEMA
+    ? `-c search_path=${process.env.DB_SCHEMA},public`
+    : undefined,
+});
+```
 
 ## Sample application 
 
