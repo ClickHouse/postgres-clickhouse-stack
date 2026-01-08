@@ -156,7 +156,7 @@ You will need the following informations to configure the mirror replication:
 
 Then select the tables you want to replicate from PostgreSQL to ClickHouse. Check the target table name in ClickHouse, it's best if it matches the source table name so we can leverage the schema import feature of pg_clickhouse.
 
-![Mirror Replication](./images/peerdb-mirror-replication.png)
+![Mirror Replication](./images/peerdb-mirror-configuration.png)
 
 ### Configure ClickHouse Foreign Data Wrapper
 
