@@ -74,7 +74,7 @@ cd postgres-clickhouse-stack
 ### Start the Stack
 
 ```bash
-./start.sh
+make start
 ```
 
 This will start the following services:
@@ -85,7 +85,7 @@ This will start the following services:
 ### Stop the stack
 
 ```bash
-docker compose down --volumes --remove-orphans
+make stop
 ```
 
 ### Access the services
@@ -235,8 +235,7 @@ Initially, the analytics dashboard queries PostgreSQL directly and takes several
 ### Start the application
 
 ```bash
-cd sample
-./start_sample.sh
+make run-sample
 ```
 
 Note that loading the sample data into PostgreSQL on the first run can take several minutes.
@@ -249,8 +248,7 @@ This will start the sample application at http://localhost:3001
 Run the migration script to migrate the data from PostgreSQL to ClickHouse using PeerDB and configure the ClickHouse Foreign Data Wrapper to offload the queries from PostgreSQL to ClickHouse using pg_clickhouse.
 
 ```bash
-cd sample
-./migrate_data.sh
+make migrate-sample
 ```
 
 This will:
