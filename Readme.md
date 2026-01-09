@@ -64,6 +64,13 @@ From the application’s point of view, PostgreSQL remains the primary interface
 **Required**
 - Docker Engine with Docker Compose
 
+### Clone this repository
+
+```bash
+git clone git@github.com:ClickHouse/postgres-clickhouse-stack.git
+cd postgres-clickhouse-stack
+```
+
 ### Start the Stack
 
 ```bash
