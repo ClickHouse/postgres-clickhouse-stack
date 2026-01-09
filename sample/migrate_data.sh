@@ -42,8 +42,7 @@ echo ""
 
 # Step 1: Create ClickHouse database
 echo -e "${BLUE}[1/3] Setting up ClickHouse database...${NC}"
-"$SCRIPT_DIR/setup_clickhouse_db.sh"
-if [ $? -ne 0 ]; then
+if ! "$SCRIPT_DIR/setup_clickhouse_db.sh"; then
     echo -e "${RED}Error: Failed to set up ClickHouse database${NC}"
     exit 1
 fi
@@ -51,8 +50,7 @@ echo ""
 
 # Step 2: Set up PeerDB peers and mirror
 echo -e "${BLUE}[2/3] Setting up PeerDB peers and mirror...${NC}"
-"$SCRIPT_DIR/setup_peerdb.sh"
-if [ $? -ne 0 ]; then
+if ! "$SCRIPT_DIR/setup_peerdb.sh"; then
     echo -e "${RED}Error: Failed to set up PeerDB${NC}"
     exit 1
 fi
@@ -60,8 +58,7 @@ echo ""
 
 # Step 3: Set up ClickHouse Foreign Data Wrapper
 echo -e "${BLUE}[3/3] Setting up ClickHouse Foreign Data Wrapper...${NC}"
-"$SCRIPT_DIR/setup_fdw.sh"
-if [ $? -ne 0 ]; then
+if ! "$SCRIPT_DIR/setup_fdw.sh"; then
     echo -e "${RED}Error: Failed to set up ClickHouse FDW${NC}"
     exit 1
 fi
