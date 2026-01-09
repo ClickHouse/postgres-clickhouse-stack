@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pool, { pgPool } from '@/lib/db';
+import pool from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // INSERT operations should always use PostgreSQL (not ClickHouse)
     // ClickHouse is optimized for analytics/SELECT queries, not transactional operations
-    const result = await pgPool.query(
+    const result = await pool.query(
       'INSERT INTO expenses (description, amount, category, date) VALUES ($1, $2, $3, $4) RETURNING *',
       [description, parseFloat(amount), category || null, date || new Date().toISOString().split('T')[0]]
     );
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   let query = '';
   let params: any[] = [];
-  
+
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Error fetching expenses:', error);
-    
+
     // Enhanced error reporting for ClickHouse issues
     if (process.env.USE_CLICKHOUSE === 'true') {
       console.error('ClickHouse query error details:', {
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
