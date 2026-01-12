@@ -257,4 +257,6 @@ This will:
 - Start data synchronization from PostgreSQL to ClickHouse
 - Configure the ClickHouse Foreign Data Wrapper
 
-Refresh the [analytics dashboard](http://localhost:3001/analytics) and you should see the load time drop from several seconds to milliseconds.
+Refresh the [analytics dashboard](http://localhost:3001/analytics) and you should see the load time drop from several seconds to milliseconds. 
+
+With 10 million rows, the gap between PostgreSQL and ClickHouse is not very noticeable. On a typical setup, query time drops from around 2 seconds to about 300 ms, though exact numbers depend on your environment. To see a more significant difference, you can increase the number of rows by setting the `SEED_EXPENSE_ROWS` environment variable. I'd recommend setting it to at least 100M rows.

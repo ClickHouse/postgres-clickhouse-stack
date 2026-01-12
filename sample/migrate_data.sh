@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -41,7 +41,7 @@ echo -e "${GREEN}✓ All required services are running${NC}"
 echo ""
 
 # Step 1: Create ClickHouse database
-echo -e "${BLUE}[1/3] Setting up ClickHouse database...${NC}"
+echo -e "${BLUE}[1/5] Setting up ClickHouse database...${NC}"
 if ! "$SCRIPT_DIR/setup_clickhouse_db.sh"; then
     echo -e "${RED}Error: Failed to set up ClickHouse database${NC}"
     exit 1
@@ -49,19 +49,35 @@ fi
 echo ""
 
 # Step 2: Set up PeerDB peers and mirror
-echo -e "${BLUE}[2/3] Setting up PeerDB peers and mirror...${NC}"
+echo -e "${BLUE}[2/5] Setting up PeerDB peers and mirror...${NC}"
 if ! "$SCRIPT_DIR/setup_peerdb.sh"; then
     echo -e "${RED}Error: Failed to set up PeerDB${NC}"
     exit 1
 fi
 echo ""
 
-# Step 3: Set up ClickHouse Foreign Data Wrapper
-echo -e "${BLUE}[3/3] Setting up ClickHouse Foreign Data Wrapper...${NC}"
+# Step 3: Check data in ClickHouse
+echo -e "${BLUE}[3/5] Checking data in ClickHouse...${NC}"
+if ! "$SCRIPT_DIR/check_data.sh"; then
+    echo -e "${RED}Error: Failed to check data in ClickHouse${NC}"
+    exit 1
+fi
+echo ""
+
+# Step 4: Set up ClickHouse Foreign Data Wrapper
+echo -e "${BLUE}[4/5] Setting up ClickHouse Foreign Data Wrapper...${NC}"
 if ! "$SCRIPT_DIR/setup_fdw.sh"; then
     echo -e "${RED}Error: Failed to set up ClickHouse FDW${NC}"
     exit 1
 fi
+echo ""
+
+# Step 5: Add .env file to sample application with DB_SCHEMA=expense_ch
+echo -e "${BLUE}[5/5] Creating .env file for sample application...${NC}"
+if ! "$SCRIPT_DIR/setup_env.sh"; then
+    echo -e "${RED}Error: Failed to create .env file${NC}"
+    exit 1
+fi  
 echo ""
 
 # Summary
@@ -75,4 +91,5 @@ echo -e "  2. PostgreSQL peer in PeerDB"
 echo -e "  3. ClickHouse peer in PeerDB"
 echo -e "  4. PeerDB mirror (PostgreSQL → ClickHouse)"
 echo -e "  5. ClickHouse Foreign Data Wrapper"
+echo -e "  6. .env file for sample application with DB_SCHEMA=expense_ch"
 echo ""

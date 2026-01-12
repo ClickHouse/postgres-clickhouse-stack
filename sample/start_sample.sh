@@ -9,6 +9,8 @@ NC='\033[0m'
 
 SAMPLE_DIR="pg-expense-direct"
 
+echo "DB_SCHEMA: $DB_SCHEMA"
+
 echo -e "${BLUE}Starting Sample Expense Application...${NC}"
 echo ""
 

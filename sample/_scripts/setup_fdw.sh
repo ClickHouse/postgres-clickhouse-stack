@@ -19,16 +19,7 @@ CREATE EXTENSION IF NOT EXISTS pg_clickhouse;
 CREATE SERVER IF NOT EXISTS clickhouse_svr FOREIGN DATA WRAPPER clickhouse_fdw OPTIONS(dbname 'expense', host 'host.docker.internal');
 
 -- Create user mapping for the current user
-DO \$\$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_user_mappings 
-        WHERE srvname = 'clickhouse_svr' 
-        AND usename = CURRENT_USER
-    ) THEN
-        CREATE USER MAPPING FOR CURRENT_USER SERVER clickhouse_svr OPTIONS (user 'default', password '');
-    END IF;
-END \$\$;
+CREATE USER MAPPING FOR CURRENT_USER SERVER clickhouse_svr OPTIONS (user 'default', password '');
 
 -- Create schema for foreign tables
 CREATE SCHEMA IF NOT EXISTS expense_ch;
