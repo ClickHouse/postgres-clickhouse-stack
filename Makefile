@@ -1,0 +1,12 @@
+start: start.sh
+	./$<
+
+stop:
+	docker compose down --volumes --remove-orphans
+
+run-sample: export DB_SCHEMA=${DB_SCHEMA}
+run-sample: sample/start_sample.sh
+	cd "$$(dirname "$<")" && "./$$(basename "$<")"
+
+migrate-sample: sample/migrate_data.sh
+	cd "$$(dirname "$<")" && "./$$(basename "$<")"
