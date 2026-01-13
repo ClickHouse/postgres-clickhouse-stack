@@ -1,16 +1,12 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# PostgreSQL + ClickHouse = The default Open Data Stack
+# PostgreSQL + ClickHouse = The Open Source Unified Data Stack
 
-A practical open source data stack for transactional and analytical workloads.
+This repository provides a ready-to-use open source data stack that combines PostgreSQL and ClickHouse to handle transactional and analytical workloads.
 
-## Overview
+PostgreSQL remains the primary database for transactional workloads and acts as the source of truth for application data. PeerDB streams data changes to ClickHouse using CDC, keeping it in sync near real time for analytics. The included pg_clickhouse extension allows PostgreSQL to transparently offload analytical queries to ClickHouse.
 
-This project provides a ready-to-use data stack built on PostgreSQL and ClickHouse.
-
-PostgreSQL acts as the system of record for transactional workloads, while ClickHouse is used for analytical queries and reporting. Data is continuously synchronized from PostgreSQL to ClickHouse using PeerDB via change data capture (CDC). The pg_clickhouse extension is included to allow PostgreSQL to offload analytical queries to ClickHouse transparently.
-
-The stack is designed for applications that use PostgreSQL as a source of truth and need fast analytics as datasets grow, without rewriting the application or introducing complex data pipelines.
+This data stack is intended for applications built on PostgreSQL that need scalable, low-latency analytics as data volume grows, without rewriting application code or building custom pipelines.
 
 ## What this stack includes
 
@@ -25,37 +21,6 @@ The stack is designed for applications that use PostgreSQL as a source of truth 
 
 ### PeerDB
 - CDC-based replication from PostgreSQL to ClickHouse
-
-## Why this setup
-
-PostgreSQL is an excellent choice as a primary database for an application, but analytical queries such as dashboards, reports, and ad-hoc exploration become slower and more expensive as data volumes increase. Using a purpose-built analytical database such as ClickHouse is a better fit for these use cases.
-
-This stack separates concerns:
-- PostgreSQL handles transactions, writes, and point queries.
-- ClickHouse handles aggregations and analytical workloads.
-- PeerDB keeps both systems in sync in near real time.
-- pg_clickhouse allows PostgreSQL to transparently offload eligible queries to ClickHouse.
-
-The result is a simple architecture that scales analytics without disrupting the application.
-
-## Typical workflow
-
-1. An application writes all data to PostgreSQL.
-2. PeerDB streams changes from PostgreSQL to ClickHouse using CDC.
-3. Analytical tables are maintained in ClickHouse.
-4. Reporting and analytics queries run on ClickHouse.
-5. When using pg_clickhouse, some analytical queries issued to PostgreSQL are automatically offloaded to ClickHouse.
-
-From the application’s point of view, PostgreSQL remains the primary interface.
-
-## Architecture
-
-![Architecture](./images/architecture-main.png)
-
-- **PostgreSQL**: Source of truth for transactional data
-- **PeerDB**: CDC pipeline for real-time replication
-- **ClickHouse**: Analytical store for fast aggregations
-- **pg_clickhouse**: Transparent query offloading from PostgreSQL to ClickHouse
 
 ## Getting started
 
@@ -94,6 +59,38 @@ make stop
 - ClickHouse UI: http://localhost:8123/play
 - ClickHouse Client: `clickhouse client --host 127.0.0.1 --port 9000`
 - PostgreSQL: `psql -h localhost -p 5432 -U admin -d postgres` (password: `password`)
+
+## Why this setup
+
+PostgreSQL is an excellent choice as a primary database for an application, but analytical queries such as dashboards, reports, and ad-hoc exploration become slower and more expensive as data volumes increase. Using a purpose-built analytical database such as ClickHouse is a better fit for these use cases.
+
+This stack separates concerns:
+- PostgreSQL handles transactions, writes, and point queries.
+- ClickHouse handles aggregations and analytical workloads.
+- PeerDB keeps both systems in sync in near real time.
+- pg_clickhouse allows PostgreSQL to transparently offload eligible queries to ClickHouse.
+
+The result is a simple architecture that scales analytics without disrupting the application.
+
+## Typical workflow
+
+1. An application writes all data to PostgreSQL.
+2. PeerDB streams changes from PostgreSQL to ClickHouse using CDC.
+3. Analytical tables are maintained in ClickHouse.
+4. Reporting and analytics queries run on ClickHouse.
+5. When using pg_clickhouse, some analytical queries issued to PostgreSQL are automatically offloaded to ClickHouse.
+
+From the application’s point of view, PostgreSQL remains the primary interface.
+
+## Architecture
+
+![Architecture](./images/architecture-main.png)
+
+- **PostgreSQL**: Source of truth for transactional data
+- **PeerDB**: CDC pipeline for real-time replication
+- **ClickHouse**: Analytical store for fast aggregations
+- **pg_clickhouse**: Transparent query offloading from PostgreSQL to ClickHouse
+
 
 ## How to use the stack
 
