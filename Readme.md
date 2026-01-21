@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# PostgreSQL + ClickHouse = The default Open Source Unified Data Stack
+# PostgreSQL + ClickHouse = The Open Source Unified Data Stack
 
 This repository provides a ready-to-use open source data stack that combines PostgreSQL and ClickHouse to handle transactional and analytical workloads.
 
