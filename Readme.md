@@ -203,17 +203,13 @@ const pool = new Pool({
 });
 ```
 
-At a high level, the resulting architecture looks like this:
-
-![Architecture](./images/integration-architecture-1.png)
-
-### Connect directly to ClickHouse
+#### Connect directly to ClickHouse
 
 If you want the application to talk to ClickHouse directly, you can use any of the available ClickHouse client libraries. Changes on the application side should still be fairly simple as ClickHouse supports SQL queries that are compatible with PostgreSQL.
 
-With this approach, the architecture looks like this:
+At a high level, the resulting architecture looks like this:
 
-![Architecture](./images/integration-architecture-2.png)
+![Architecture](./images/integration-architecture-1.png)
 
 ## Sample application 
 
