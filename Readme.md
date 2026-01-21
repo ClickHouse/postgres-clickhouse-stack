@@ -24,10 +24,15 @@ This data stack is intended for applications built on PostgreSQL that need scala
 
 ## Getting started
 
-### Prerequisites
+### Pre-requisites
 
-**Required**
-- Docker Engine with Docker Compose
+**Required** 
+- Docker
+- Make
+
+**Optional**
+- Postgres client
+- ClickHouse client
 
 ### Clone this repository
 
