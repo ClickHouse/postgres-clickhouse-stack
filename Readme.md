@@ -24,10 +24,15 @@ This data stack is intended for applications built on PostgreSQL that need scala
 
 ## Getting started
 
-### Prerequisites
+### Pre-requisites
 
-**Required**
-- Docker Engine with Docker Compose
+**Required** 
+- Docker
+- Make
+
+**Optional**
+- Postgres client
+- ClickHouse client
 
 ### Clone this repository
 
@@ -203,17 +208,13 @@ const pool = new Pool({
 });
 ```
 
-At a high level, the resulting architecture looks like this:
-
-![Architecture](./images/integration-architecture-1.png)
-
-### Connect directly to ClickHouse
+#### Connect directly to ClickHouse
 
 If you want the application to talk to ClickHouse directly, you can use any of the available ClickHouse client libraries. Changes on the application side should still be fairly simple as ClickHouse supports SQL queries that are compatible with PostgreSQL.
 
-With this approach, the architecture looks like this:
+At a high level, the resulting architecture looks like this:
 
-![Architecture](./images/integration-architecture-2.png)
+![Architecture](./images/integration-architecture-1.png)
 
 ## Sample application 
 
@@ -237,7 +238,7 @@ make run-sample
 
 Note that loading the sample data into PostgreSQL on the first run can take several minutes.
 
-This will start the sample application at http://localhost:3001
+This will start the sample application at http://localhost:8080
 
 
 ### Set Up Data Replication
@@ -254,6 +255,6 @@ This will:
 - Start data synchronization from PostgreSQL to ClickHouse
 - Configure the ClickHouse Foreign Data Wrapper
 
-Refresh the [analytics dashboard](http://localhost:3001/analytics) and you should see the load time drop from several seconds to milliseconds. 
+Refresh the [analytics dashboard](http://localhost:8080/analytics) and you should see the load time drop from several seconds to milliseconds. 
 
 With 10 million rows, the gap between PostgreSQL and ClickHouse is not very noticeable. On a typical setup, query time drops from around 2 seconds to about 300 ms, though exact numbers depend on your environment. To see a more significant difference, you can increase the number of rows by setting the `SEED_EXPENSE_ROWS` environment variable. I'd recommend setting it to at least 100M rows.
