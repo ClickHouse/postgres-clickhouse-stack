@@ -38,7 +38,7 @@ echo ""
 echo -e "${YELLOW}Running init.sql to create tables..."
 export PGPASSWORD=password
 
-if ! psql -h localhost -p 5432 -U admin -d postgres -f init.sql --no-psqlrc > /dev/null 2>&1; then
+if psql -h localhost -p 5432 -U admin -d postgres -f init.sql --no-psqlrc > /dev/null 2>&1; then
     echo -e "${GREEN}✓ Tables created successfully${NC}"
 else
     echo -e "${YELLOW}⚠ Table creation encountered issues${NC}"
