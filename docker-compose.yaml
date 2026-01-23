@@ -32,7 +32,7 @@ x-flow-worker-env: &flow-worker-env
 services:
   catalog:
     container_name: catalog
-    image: postgres:17-alpine@sha256:c4c3cded22488238ed0df51b82913b5d3b426fad19fbe205a711f05f5dba5c45
+    image: postgres:18-alpine@sha256:b40d931bd0e7ce6eecc59a5a6ac3b3c04a01e559750e73e7086b6dbd7f8bf545
     command: -c config_file=/etc/postgresql.conf
     restart: unless-stopped
     ports:
@@ -69,7 +69,7 @@ services:
       - POSTGRES_PWD=postgres
       - POSTGRES_SEEDS=catalog
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
-    image: temporalio/auto-setup:1.27@sha256:501a883b1c4a4168eb5000c368495e7eb7106dbadefc75b7fd886be0108456b9
+    image: temporalio/auto-setup:1.29@sha256:8240e81d9b6946e8cc9b86714a04733cec32b1332b8523961ad47700861036f7
     ports:
       - 7233:7233
     volumes:
@@ -107,13 +107,13 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:3000
       - TEMPORAL_CSRF_COOKIE_INSECURE=true
-    image: temporalio/ui:2.35.1@sha256:a98e49436dab613aaea77e72da4003f606045deaca066b706c421eeb2c1acad4
+    image: temporalio/ui:2.44.0@sha256:0b36e00aad304134eb908f41bf915934afe4eef1efc5b1750c65a5312ff3c9bb
     ports:
       - 8085:8080
 
   flow-api:
     container_name: flow_api
-    image: ghcr.io/peerdb-io/flow-api:stable-v0.25.1
+    image: ghcr.io/peerdb-io/flow-api:stable-v0.36.3
     restart: unless-stopped
     ports:
       - 8112:8112
@@ -129,7 +129,7 @@ services:
 
   flow-snapshot-worker:
     container_name: flow-snapshot-worker
-    image: ghcr.io/peerdb-io/flow-snapshot-worker:stable-v0.25.1
+    image: ghcr.io/peerdb-io/flow-snapshot-worker:stable-v0.36.3
     restart: unless-stopped
     environment:
       <<: [ *catalog-config, *flow-worker-env, *minio-config ]
@@ -139,7 +139,7 @@ services:
 
   flow-worker:
     container_name: flow-worker
-    image: ghcr.io/peerdb-io/flow-worker:stable-v0.25.1
+    image: ghcr.io/peerdb-io/flow-worker:stable-v0.36.3
     restart: unless-stopped
     environment:
       <<: [ *catalog-config, *flow-worker-env, *minio-config ]
@@ -152,7 +152,7 @@ services:
   peerdb:
     container_name: peerdb-server
     stop_signal: SIGINT
-    image: ghcr.io/peerdb-io/peerdb-server:stable-v0.25.1
+    image: ghcr.io/peerdb-io/peerdb-server:stable-v0.36.3
     restart: unless-stopped
     environment:
       <<: *catalog-config
@@ -168,13 +168,12 @@ services:
 
   peerdb-ui:
     container_name: peerdb-ui
-    image: ghcr.io/peerdb-io/peerdb-ui:stable-v0.25.1
+    image: ghcr.io/peerdb-io/peerdb-ui:stable-v0.36.3
     restart: unless-stopped
     ports:
       - 3000:3000
     environment:
       <<: *catalog-config
-      DATABASE_URL: postgres://postgres:postgres@catalog:5432/postgres
       PEERDB_FLOW_SERVER_HTTP: http://flow_api:8113
       NEXTAUTH_SECRET: __changeme__
       NEXTAUTH_URL: http://localhost:3000
@@ -185,7 +184,7 @@ services:
       - flow-api
 
   minio:
-    image: minio/minio:RELEASE.2024-11-07T00-52-20Z@sha256:ac591851803a79aee64bc37f66d77c56b0a4b6e12d9e5356380f4105510f2332
+    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     restart: unless-stopped
     volumes:
       - minio-data:/data
@@ -222,27 +221,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-  # postgres:
-  #   container_name: postgres
-  #   hostname: postgres
-  #   image: postgres
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: admin
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - ./volumes/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-  #   command:
-  #     - "postgres"
-  #     - "-c"
-  #     - "wal_level=logical"
-  #     - "-c"
-  #     - "max_replication_slots=10"
-  #     - "-c"
-  #     - "max_wal_senders=10"
   clickhouse:
     image: clickhouse/clickhouse-server
     user: "101:101"
@@ -261,7 +239,6 @@ services:
 volumes:
   pgdata:
   minio-data:
-
 
 networks:
   default:
