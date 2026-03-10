@@ -9,15 +9,16 @@
     "seed": "node scripts/seed-database.js"
   },
   "dependencies": {
-    "@types/pg": "^8.15.5",
     "next": "15.5.3",
     "pg": "^8.16.3",
+    "pg-copy-streams": "^6.0.6",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",

@@ -43,40 +43,14 @@ cmd_start() {
     echo ""
     echo -e "${YELLOW}Waiting for services to start...${NC}"
 
-    echo -e "${YELLOW}Checking PostgreSQL...${NC}"
-    if check_service "postgres"; then
-        echo -e "${GREEN}✓ PostgreSQL is ready${NC}"
-    else
-        echo -e "${YELLOW}⚠ PostgreSQL is still starting (may need more time)${NC}"
-    fi
-
-    echo -e "${YELLOW}Checking ClickHouse...${NC}"
-    if check_service "clickhouse"; then
-        echo -e "${GREEN}✓ ClickHouse is ready${NC}"
-    else
-        echo -e "${YELLOW}⚠ ClickHouse is still starting (may need more time)${NC}"
-    fi
-
-    echo -e "${YELLOW}Checking PeerDB UI...${NC}"
-    if check_service "peerdb-ui"; then
-        echo -e "${GREEN}✓ PeerDB UI is ready${NC}"
-    else
-        echo -e "${YELLOW}⚠ PeerDB UI is still starting (may need more time)${NC}"
-    fi
-
-    echo -e "${YELLOW}Checking Catalog...${NC}"
-    if check_service "catalog"; then
-        echo -e "${GREEN}✓ Catalog is ready${NC}"
-    else
-        echo -e "${YELLOW}⚠ Catalog is still starting (may need more time)${NC}"
-    fi
-
-    echo -e "${YELLOW}Checking Sample App...${NC}"
-    if check_service "sample-app"; then
-        echo -e "${GREEN}✓ Sample App is ready${NC}"
-    else
-        echo -e "${YELLOW}⚠ Sample App is still starting (may need more time)${NC}"
-    fi
+    for svc in postgres clickhouse peerdb-ui catalog expense-app; do
+        echo -ne "${YELLOW}Waiting for ${svc}...${NC}\r"
+        if check_service "$svc"; then
+            echo -e "${GREEN}✓ ${svc}${NC}                    "
+        else
+            echo -e "${YELLOW}⚠ ${svc} (may need more time)${NC}"
+        fi
+    done
 
     echo ""
     echo -e "${GREEN}========================================${NC}"
@@ -117,7 +91,7 @@ cmd_clean() {
 }
 
 cmd_seed() {
-    if ! docker compose ps --status running sample-app 2>/dev/null | grep -q sample-app; then
+    if ! docker compose ps --status running expense-app 2>/dev/null | grep -q expense-app; then
         echo -e "${RED}Error: Sample app is not running${NC}"
         echo -e "Please start the stack first using: ${YELLOW}./run.sh start${NC}"
         exit 1
@@ -125,10 +99,10 @@ cmd_seed() {
     local rows="${1:-}"
     if [ -n "$rows" ]; then
         echo -e "${BLUE}Seeding sample database with ${rows} rows...${NC}"
-        docker compose exec -e SEED_EXPENSE_ROWS="$rows" sample-app npm run seed
+        docker compose exec -e SEED_EXPENSE_ROWS="$rows" expense-app npm run seed
     else
         echo -e "${BLUE}Seeding sample database...${NC}"
-        docker compose exec sample-app npm run seed
+        docker compose exec expense-app npm run seed
     fi
 }
 
@@ -137,19 +111,19 @@ cmd_migrate() {
 }
 
 cmd_use_clickhouse() {
-    echo -e "${BLUE}Switching sample app to ClickHouse (via FDW)...${NC}"
-    cat > sample/pg-expense-direct/.env <<EOF
-DB_SCHEMA=expense_ch
-EOF
-    docker compose restart sample-app
-    echo -e "${GREEN}✓ Sample app now queries ClickHouse${NC}"
+    echo -e "${BLUE}Switching to ClickHouse (via FDW)...${NC}"
+    curl -s -X POST http://localhost:18080/api/backend \
+      -H 'Content-Type: application/json' \
+      -d '{"backend":"clickhouse"}' > /dev/null
+    echo -e "${GREEN}✓ Now querying ClickHouse${NC}"
 }
 
 cmd_use_postgres() {
-    echo -e "${BLUE}Switching sample app to PostgreSQL...${NC}"
-    rm -f sample/pg-expense-direct/.env
-    docker compose restart sample-app
-    echo -e "${GREEN}✓ Sample app now queries PostgreSQL${NC}"
+    echo -e "${BLUE}Switching to PostgreSQL...${NC}"
+    curl -s -X POST http://localhost:18080/api/backend \
+      -H 'Content-Type: application/json' \
+      -d '{"backend":"postgres"}' > /dev/null
+    echo -e "${GREEN}✓ Now querying PostgreSQL${NC}"
 }
 
 cmd_psql() {
@@ -175,8 +149,8 @@ open_url() {
         open "$1"
     elif command -v xdg-open &> /dev/null; then
         xdg-open "$1"
-    elif command -v start &> /dev/null; then
-        start "$1"
+    elif command -v cmd.exe &> /dev/null; then
+        cmd.exe /c start "$1"
     else
         echo -e "${YELLOW}Open in your browser: ${NC}$1"
     fi

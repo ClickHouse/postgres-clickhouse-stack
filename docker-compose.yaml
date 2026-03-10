@@ -44,7 +44,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
       - ./volumes/catalog/postgresql.conf:/etc/postgresql.conf
       - ./volumes/catalog/pg_hba.conf:/etc/pg_hba.conf
       - ./volumes/catalog/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -197,6 +197,7 @@ services:
     ports:
       - "127.0.0.1:15432:5432"
     volumes:
+      - postgresdata:/var/lib/postgresql
       - ./volumes/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     command:
       - "postgres"
@@ -216,6 +217,7 @@ services:
     user: "101:101"
     hostname: clickhouse
     volumes:
+      - clickhousedata:/var/lib/clickhouse
       - ./volumes/clickhouse/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
       - ./volumes/clickhouse/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
       - ./volumes/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -225,7 +227,7 @@ services:
     depends_on:
       - postgres
 
-  sample-app:
+  expense-app:
     image: node:24-alpine
     working_dir: /app
     volumes:
@@ -239,6 +241,8 @@ services:
       DB_PASSWORD: password
       DB_NAME: postgres
       DB_PORT: "5432"
+      SOURCE_SCHEMA: public
+      DESTINATION_SCHEMA: expense_ch
       SEED_EXPENSE_ROWS: ${SEED_EXPENSE_ROWS:-10000000}
     depends_on:
       postgres:
@@ -253,6 +257,8 @@ services:
 
 volumes:
   pgdata:
+  postgresdata:
+  clickhousedata:
   minio-data:
   sample_node_modules:
 

@@ -32,13 +32,13 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!description.trim() || !amount.trim()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await onSubmit({
         description: description.trim(),
@@ -46,8 +46,7 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
         category: category || 'Other',
         date
       });
-      
-      // Reset form
+
       setDescription('');
       setAmount('');
       setCategory('');
@@ -59,12 +58,14 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
     }
   };
 
+  const inputClass = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-800";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white rounded-lg shadow-sm border">
-      <h2 className="text-xl font-semibold text-gray-900">Add New Expense</h2>
-      
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm border dark:border-gray-700">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Add New Expense</h2>
+
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Description
         </label>
         <input
@@ -73,14 +74,14 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What did you spend on?"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+          className={inputClass}
           autoComplete="off"
           required
         />
       </div>
 
       <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Amount
         </label>
         <input
@@ -91,7 +92,7 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0.00"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+          className={inputClass}
           autoComplete="off"
           required
         />
@@ -101,7 +102,7 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
               key={quickAmount}
               type="button"
               onClick={() => setAmount(quickAmount.toString())}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+              className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
             >
               ${quickAmount}
             </button>
@@ -110,14 +111,14 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
       </div>
 
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Category
         </label>
         <select
           id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+          className={inputClass}
         >
           <option value="">Select a category</option>
           {categories.map((cat) => (
@@ -129,7 +130,7 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
       </div>
 
       <div>
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Date
         </label>
         <input
@@ -137,7 +138,7 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+          className={inputClass}
           autoComplete="off"
         />
       </div>

@@ -255,7 +255,7 @@ This will:
 
 Refresh the [analytics dashboard](http://localhost:18080/analytics) and you should see the load time drop from several seconds to milliseconds.
 
-To switch between backends:
+To switch between backends, use the toggle on the analytics page or:
 
 ```bash
 ./run.sh use-postgres     # switch back to PostgreSQL

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import pool, { query as dbQuery, SOURCE_SCHEMA } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // INSERT operations should always use PostgreSQL (not ClickHouse)
-    // ClickHouse is optimized for analytics/SELECT queries, not transactional operations
+    // Writes always go to source (PostgreSQL). PeerDB replicates to ClickHouse.
     const result = await pool.query(
-      'INSERT INTO expenses (description, amount, category, date) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO ' + SOURCE_SCHEMA + '.expenses (description, amount, category, date) VALUES ($1, $2, $3, $4) RETURNING *',
       [description, parseFloat(amount), category || null, date || new Date().toISOString().split('T')[0]]
     );
 
@@ -36,31 +35,31 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const category = searchParams.get('category');
 
-    let query = 'SELECT * FROM expenses WHERE 1=1';
+    let query = 'SELECT id, description, amount, category, date, created_at FROM expenses WHERE 1=1';
     const params: any[] = [];
     let paramCount = 0;
 
     if (startDate) {
       paramCount++;
-      query += ` AND date >= $${paramCount}`;
+      query += ' AND date >= $' + paramCount;
       params.push(startDate);
     }
 
     if (endDate) {
       paramCount++;
-      query += ` AND date <= $${paramCount}`;
+      query += ' AND date <= $' + paramCount;
       params.push(endDate);
     }
 
     if (category) {
       paramCount++;
-      query += ` AND category = $${paramCount}`;
+      query += ' AND category = $' + paramCount;
       params.push(category);
     }
 
     query += ' ORDER BY date DESC, created_at DESC LIMIT 100';
 
-    const result = await pool.query(query, params);
+    const result = await dbQuery(query, params);
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error('Error fetching expenses:', error);
