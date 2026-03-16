@@ -135,6 +135,15 @@ cmd_psql() {
     docker compose exec postgres psql -U admin -d postgres "$@"
 }
 
+cmd_catalog() {
+    if ! docker compose ps --status running catalog 2>/dev/null | grep -q catalog; then
+        echo -e "${RED}Error: Catalog is not running${NC}"
+        echo -e "Please start the stack first using: ${YELLOW}./run.sh start${NC}"
+        exit 1
+    fi
+    docker compose exec catalog psql -U postgres -d postgres "$@"
+}
+
 cmd_clickhouse() {
     if ! docker compose ps --status running clickhouse 2>/dev/null | grep -q clickhouse; then
         echo -e "${RED}Error: ClickHouse is not running${NC}"
@@ -163,8 +172,10 @@ cmd_open() {
         analytics)  open_url "http://localhost:18080/analytics" ;;
         peerdb)     open_url "http://localhost:13000" ;;
         clickhouse) open_url "http://localhost:18123/play" ;;
+        temporal)   open_url "http://localhost:18085" ;;
+        minio)      open_url "http://localhost:19002" ;;
         *)
-            echo "Usage: ./run.sh open [app|analytics|peerdb|clickhouse]"
+            echo "Usage: ./run.sh open [app|analytics|peerdb|clickhouse|temporal|minio]"
             exit 1
             ;;
     esac
@@ -182,8 +193,9 @@ cmd_help() {
     echo "  use-postgres  Switch sample app to query PostgreSQL"
     echo "  use-clickhouse Switch sample app to query ClickHouse"
     echo "  psql        Open a PostgreSQL shell"
+    echo "  catalog     Open a PeerDB catalog database shell"
     echo "  clickhouse  Open a ClickHouse shell"
-    echo "  open [target] Open in browser (app|analytics|peerdb|clickhouse)"
+    echo "  open [target] Open in browser (app|analytics|peerdb|clickhouse|temporal)"
     echo "  help        Show this help message"
 }
 
@@ -196,6 +208,7 @@ case "${1:-}" in
     use-postgres)  cmd_use_postgres ;;
     use-clickhouse) cmd_use_clickhouse ;;
     psql)       shift; cmd_psql "$@" ;;
+    catalog)    shift; cmd_catalog "$@" ;;
     clickhouse) shift; cmd_clickhouse "$@" ;;
     open)       shift; cmd_open "$@" ;;
     help)    cmd_help ;;
