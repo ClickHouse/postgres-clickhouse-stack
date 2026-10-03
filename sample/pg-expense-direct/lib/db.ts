@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 const pool = new Pool({
   user: process.env.DB_USER || 'admin',
@@ -31,15 +31,21 @@ export function useDestination() {
   activeSchema = DESTINATION_SCHEMA;
 }
 
-export async function query(text: string, params: any[] = []) {
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params: unknown[] = []
+): Promise<QueryResult<T>> {
   const client = await pool.connect();
   try {
     const schema = activeSchema || SOURCE_SCHEMA;
     await client.query('SET search_path TO ' + schema + ', public');
-    return await client.query(text, params);
+    return await client.query<T>(text, params);
   } finally {
-    await client.query('SET search_path TO ' + SOURCE_SCHEMA);
-    client.release();
+    try {
+      await client.query('SET search_path TO ' + SOURCE_SCHEMA);
+    } finally {
+      client.release();
+    }
   }
 }
 
