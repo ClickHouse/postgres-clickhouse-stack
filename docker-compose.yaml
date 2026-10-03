@@ -1,11 +1,11 @@
 name: peerdb-postgres-clickhouse-example
 
-x-minio-config: &minio-config
-  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ACCESS_KEY_ID: _peerdb_minioadmin
-  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_SECRET_ACCESS_KEY: _peerdb_minioadmin
+x-s3-config: &s3-config
+  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ACCESS_KEY_ID: &s3-access-key _peerdb_s3admin
+  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_SECRET_ACCESS_KEY: &s3-secret-key _peerdb_s3admin
   PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_REGION: us-east-1
-  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ENDPOINT_URL_S3: http://minio:9000
-  PEERDB_CLICKHOUSE_AWS_S3_BUCKET_NAME: peerdbbucket
+  PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ENDPOINT_URL_S3: http://seaweedfs:8333
+  PEERDB_CLICKHOUSE_AWS_S3_BUCKET_NAME: &s3-bucket peerdbbucket
 
 x-catalog-config: &catalog-config
   PEERDB_CATALOG_HOST: catalog
@@ -114,7 +114,7 @@ services:
       - "127.0.0.1:18112:8112"
       - "127.0.0.1:18113:8113"
     environment:
-      <<: [ *catalog-config, *flow-worker-env, *minio-config ]
+      <<: [ *catalog-config, *flow-worker-env, *s3-config ]
       PEERDB_ALLOWED_TARGETS:
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -126,7 +126,7 @@ services:
     image: ghcr.io/peerdb-io/flow-snapshot-worker:stable-v0.36.9
     restart: unless-stopped
     environment:
-      <<: [ *catalog-config, *flow-worker-env, *minio-config ]
+      <<: [ *catalog-config, *flow-worker-env, *s3-config ]
     depends_on:
       temporal-admin-tools:
         condition: service_healthy
@@ -135,7 +135,7 @@ services:
     image: ghcr.io/peerdb-io/flow-worker:stable-v0.36.9
     restart: unless-stopped
     environment:
-      <<: [ *catalog-config, *flow-worker-env, *minio-config ]
+      <<: [ *catalog-config, *flow-worker-env, *s3-config ]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -174,18 +174,19 @@ services:
     depends_on:
       - flow-api
 
-  minio:
-    image: minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
     restart: unless-stopped
+    command: mini
     volumes:
-      - minio-data:/data
+      - seaweedfs-data:/data
     ports:
-      - "127.0.0.1:19001:9000"
-      - "127.0.0.1:19002:36987"
+      - "127.0.0.1:19001:8333"
+      - "127.0.0.1:19002:23646"
     environment:
-      <<: *minio-config
-    entrypoint: >
-      /bin/sh -c " export MINIO_ROOT_USER=$$PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_ACCESS_KEY_ID; export MINIO_ROOT_PASSWORD=$$PEERDB_CLICKHOUSE_AWS_CREDENTIALS_AWS_SECRET_ACCESS_KEY; minio server /data --console-address=":36987" & sleep 2; /usr/bin/mc alias set myminiopeerdb http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; /usr/bin/mc mb myminiopeerdb/$$PEERDB_CLICKHOUSE_AWS_S3_BUCKET_NAME; wait "
+      AWS_ACCESS_KEY_ID: *s3-access-key
+      AWS_SECRET_ACCESS_KEY: *s3-secret-key
+      S3_BUCKET: *s3-bucket
   postgres:
     hostname: postgres
     image: ghcr.io/clickhouse/pg_clickhouse:18
@@ -259,7 +260,7 @@ volumes:
   pgdata:
   postgresdata:
   clickhousedata:
-  minio-data:
+  seaweedfs-data:
   sample_node_modules:
 
 networks:
