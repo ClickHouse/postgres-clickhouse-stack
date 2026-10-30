@@ -214,7 +214,7 @@ services:
       timeout: 5s
       retries: 10
   clickhouse:
-    image: clickhouse:25.8
+    image: clickhouse:26.3.62.3
     user: "101:101"
     hostname: clickhouse
     volumes:
