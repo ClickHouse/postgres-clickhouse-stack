@@ -9,7 +9,7 @@
     "seed": "node scripts/seed-database.js"
   },
   "dependencies": {
-    "next": "16.3.8",
+    "next": "16.4.1",
     "pg": "^8.16.3",
     "pg-copy-streams": "^6.0.6",
     "react": "19.1.0",
