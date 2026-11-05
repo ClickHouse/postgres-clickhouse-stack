@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
 
     let query = 'SELECT id, description, amount, category, date, created_at FROM expenses WHERE 1=1';
-    const params: any[] = [];
+    const params: string[] = [];
     let paramCount = 0;
 
     if (startDate) {
